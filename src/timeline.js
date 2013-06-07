@@ -2,12 +2,13 @@ var Timeline = {
 
     years : [],
     currentYear : null,
+    maxLeft : 0,
 
     init : function() {
 
         this.timeline = jQuery('#timeline');
         this.width = this.timeline.width();
-        this.pixelPerDay = Math.floor(this.timeline.width() / 356);
+        this.pixelPerDay = this.timeline.width() / 356;
 
         this.initYears();
         this.registerEvents();
@@ -20,16 +21,22 @@ var Timeline = {
         this.timeline.draggable({
             axis: "x",
             drag: function(event, ui) {
-                //console.log(Math.abs(ui.position.left), self.timeline.width());
 
                 var currentLeft = ui.position.left;
 
                 // Append new year
-                if (Math.abs(currentLeft) > self.timeline.width() / 2) {
+
+                var currentIndex = self.currentYear.node.index();
+                var yearWidth = self.width;
+                var currentMaxLeft = yearWidth * Math.max(1, currentIndex);
+
+                // Append new year when current year is dragged to left
+                if (currentMaxLeft + (currentLeft * -1) > self.maxLeft) {
+                    self.maxLeft = self.width * Math.max(2, self.years.length);
                     self.appendYear.call(self);
                 }
 
-                //self.prependYear.call(self);
+                self.update.call(self, currentLeft, currentMaxLeft);
             }
         });
     },
@@ -39,17 +46,41 @@ var Timeline = {
             newYear = this.addYear(year, 0);
 
         this.timeline.append(newYear.node);
+        this.currentYear = newYear;
+        newYear.afterBuild();
+        this.maxLeft = this.currentYear.node.width();
+    },
+
+    update : function(currentLeft, currentMaxLeft) {
+
+        if (currentMaxLeft + (currentLeft * -1) > this.maxLeft - this.width / 2) {
+
+            var index = Math.max(2, this.years.length) + 1;
+            this.maxLeft = this.width * index;
+            console.log(currentLeft);
+            this.currentYear.update(0);
+            console.log("update currentYear", this.currentYear.next);
+            this.currentYear = this.currentYear.next;
+        }
+
+        this.currentYear.update(currentLeft);
     },
 
     appendYear : function() {
 
-        var lastYearNumber = this.years[this.years.length - 1].number,
+        var lastYear = this.years[this.years.length - 1],
+            lastYearNumber = lastYear.number,
             newYearNumber = lastYearNumber + 1;
 
-        if (!this.yearExists()) {
+        if (this.yearExists(newYearNumber) < 0) {
             var newYear = this.addYear(newYearNumber, this.timeline.width());
-            this.timeline.css({ width : this.timeline.width() + jQuery('#timelineWrapper').width() });
+
+            newYear.setPrev(lastYear);
+            lastYear.setNext(newYear);
             this.timeline.append(newYear.node);
+            this.afterAddingYear(newYear);
+
+            console.log("appended");
         }
     },
 
@@ -59,11 +90,18 @@ var Timeline = {
             firstYearNumber = parseInt(firstYear.data('number'), 10),
             newYearNumber = firstYearNumber - 1;
 
-        if (!this.yearExists(newYearNumber)) {
+        if (this.yearExists(newYearNumber) < 0) {
             var newYear = this.addYear(newYearNumber, 0);
-            this.timeline.css({ width : this.timeline.width() + jQuery('#timelineWrapper').width() });
+            newYear.setNext(firstYear);
+            firstYear.setPrev(newYear);
             this.timeline.prepend(newYear.node);
+            this.afterAddingYear(newYear);
         }
+    },
+
+    afterAddingYear : function(year) {
+        this.timeline.css({ width : this.width * this.years.length  });
+        year.afterBuild();
     },
 
 
@@ -72,9 +110,7 @@ var Timeline = {
     },
 
     addYear : function(year, left) {
-
-        //console.trace(year, left);
-
+        console.log("adding", year);
         var newYear = new Year(year, left);
         this.years.push(newYear);
 
@@ -83,18 +119,28 @@ var Timeline = {
 
     addEvent : function(event) {
 
-        var year = event.year;
+        var year = event.year,
+            yearIndex = this.yearExists(year);
 
-        if (this.yearExists(year)) {
-            var indexOfYear = this.years.indexOf(year);
-            this.years[indexOfYear].addEvent(event);
+        if (yearIndex > -1) {
+            this.years[yearIndex].addEvent(event);
         } else {
             var newYear = this.addYear(year);
             newYear.addEvent(event);
         }
     },
 
-    yearExists : function(year) {
-        return this.years.indexOf(year) > -1;
+    yearExists : function(searchedYear) {
+
+        var len = this.years.length,
+            i = 0;
+
+        for (i; i < len; i++) {
+            if (this.years[i].number === searchedYear) {
+                return i;
+            }
+        }
+
+        return -1;
     }
 };

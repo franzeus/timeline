@@ -1,10 +1,8 @@
 var Month = function(index, left, year) {
-
     this.index = index;
     this.number = index + 1;
     this.year = year;
-    this.id = this.number + this.year;
-
+    this.id = this.number + '_' + this.year;
     this.numberOfDays = 31;
 
     this.events = [];
