@@ -3,6 +3,7 @@ var Month = function(index, left, year) {
     this.index = index;
     this.number = index + 1;
     this.year = year;
+    this.id = this.number + this.year;
 
     this.numberOfDays = 31;
 
@@ -10,7 +11,7 @@ var Month = function(index, left, year) {
     this.days = [];
     this.pixelPerDay = Timeline.pixelPerDay;
 
-    this.$month = jQuery('<ul class="month" data-number="' + this.number + '"></ul>');
+    this.$month = jQuery('<ul class="month" id="' + this.id + '" data-number="' + this.number + '"></ul>');
 
     this.$month.css({
         left: left
@@ -28,7 +29,7 @@ Month.prototype.getName = function() {
 };
 
 Month.prototype.getDom = function() {
-    return this.$month;
+    return Timeline.timeline.find('#' + this.id);
 };
 
 Month.prototype.setLabel = function() {
@@ -42,8 +43,8 @@ Month.prototype.addEvent = function(event) {
         eventNode = dayEvent.buildNode();
 
     this.events.push(dayEvent);
+    this.getDom().append(eventNode);
 
-    this.$month.append(eventNode);
     return this;
 };
 

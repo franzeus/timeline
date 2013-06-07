@@ -15,8 +15,6 @@ Year.prototype.buildNode = function() {
         width: Timeline.width
     });
 
-    //Timeline.timeline.append(yearNode);
-
     return yearNode;
 };
 
@@ -29,20 +27,20 @@ Year.prototype.generateMonths = function() {
 
         this.months.push(month);
 
-        this.node.append(month.getDom());
+        this.node.append(month.$month);
     }
-},
+};
 
 Year.prototype.addEvent = function(event) {
 
     this.traverseMonths(function(month) {
 
         if (month.number === event.month) {
-            month.addEvent(event, this.pixelPerDay);
+            month.addEvent(event);
         }
 
     });
-},
+};
 
 Year.prototype.traverseMonths = function(callback) {
 
@@ -53,4 +51,4 @@ Year.prototype.traverseMonths = function(callback) {
     for (i = 0; i < len; i++) {
         callback.call(self, this.months[i]);
     }
-}
+};
