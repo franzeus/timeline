@@ -1,0 +1,107 @@
+<html>
+<head>
+  <title>Timeline</title>
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1, user-scalable=0" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <style>
+    body { font-family: 'Arial', sans-serif; font-size: 0.9em; margin:0; line-height:1.5em; background:#F6F6F6; color:#09f; }
+
+    #timelineWrapper {
+      width:80%;
+      height:100px;
+      margin:auto;
+      margin-top:10em;
+      position:relative;
+      cursor: pointer;
+      overflow: hidden;
+      padding-top:4em;
+    }
+
+    #timeline {
+      height:100px;
+    }
+
+    .year {
+      display: inline;
+      background:#09f;
+      height:1px;
+      width:100%;
+      position:relative;
+      float:left;
+      /*left:0; top:0;*/
+    }
+
+    .month {
+      background: #666;
+      width:2px;
+      height:30px;
+      position:absolute;
+      top:-15px;
+      list-style-type: none;
+      margin: 0; padding:0;
+      display:inline;
+    }
+
+    .month-label {
+      position:absolute;
+      top:30px; left:-3px;
+    }
+
+    .day {
+      background: #CCC;
+      width:1px;
+      height:10px;
+      float:left;
+      display:inline-block;
+      position:absolute;
+      top:10px;
+    }
+
+    .dayEvent {
+      background: #FF00BB;
+      width:2px;
+      height:10px;
+      position:absolute;
+      top:10px;
+    }
+
+    .currentYearLabel {
+      position:absolute;
+      top:-40px; left:0;
+      font-size: 1.4em;
+      margin-bottom:1em;
+    }
+  </style>
+</head>
+<body>
+
+<div id="timelineWrapper">
+  <div id="timeline"></div>
+</div>
+
+<!-- JQuery is necessary -->
+<script type="text/javascript" src="src/lib/jquery.min.js"></script>
+<script type="text/javascript" src="src/lib/jquery-ui-1.9.0.custom/js/jquery-ui-1.9.0.custom.min.js"></script>
+
+<script type="text/javascript" src="src/timeline.js"></script>
+<script type="text/javascript" src="src/year.js"></script>
+<script type="text/javascript" src="src/month.js"></script>
+<script type="text/javascript" src="src/day.js"></script>
+
+<!-- Initialize Game -->
+<script type="text/javascript">
+$(document).ready(function() {
+
+  Timeline.init();
+
+  Timeline.addEvent({
+    day : 25,
+    month : 10,
+    year : 2013
+  });
+
+});
+</script>
+</body>
+</html>
