@@ -21,22 +21,7 @@ var Timeline = {
         this.timeline.draggable({
             axis: "x",
             drag: function(event, ui) {
-
-                var currentLeft = ui.position.left;
-
-                // Append new year
-
-                var currentIndex = self.currentYear.node.index();
-                var yearWidth = self.width;
-                var currentMaxLeft = yearWidth * Math.max(1, currentIndex);
-
-                // Append new year when current year is dragged to left
-                if (currentMaxLeft + (currentLeft * -1) > self.maxLeft) {
-                    self.maxLeft = self.width * Math.max(2, self.years.length);
-                    self.appendYear.call(self);
-                }
-
-                self.update.call(self, currentLeft, currentMaxLeft);
+                self.update.call(self, ui.position);
             }
         });
     },
@@ -46,24 +31,39 @@ var Timeline = {
             newYear = this.addYear(year, 0);
 
         this.timeline.append(newYear.node);
-        this.currentYear = newYear;
+        this.setCurrentYear(newYear);
         newYear.afterBuild();
-        this.maxLeft = this.currentYear.node.width();
+        this.nextMaxLeft = this.currentYear.node.width();
     },
 
-    update : function(currentLeft, currentMaxLeft) {
+    update : function(position) {
 
-        if (currentMaxLeft + (currentLeft * -1) > this.maxLeft - this.width / 2) {
+        // Append new year
+        var currentLeft = position.left,
+            currentIndex = this.currentYear.node.index(),
+            yearWidth = this.width,
+            currentMaxLeft = yearWidth * Math.max(1, currentIndex);
 
-            var index = Math.max(2, this.years.length) + 1;
-            this.maxLeft = this.width * index;
-            console.log(currentLeft);
+        // Append new year when current year is dragged to left
+        if (currentMaxLeft + (currentLeft * -1) > this.nextMaxLeft) {
+            this.nextMaxLeft = this.width * Math.max(2, this.years.length);
+            var newYear = this.appendYear.call(this);
+        }
+
+        if (currentMaxLeft + (currentLeft * -1) > this.nextMaxLeft - this.width / 2) {
+            /*
             this.currentYear.update(0);
             console.log("update currentYear", this.currentYear.next);
-            this.currentYear = this.currentYear.next;
+            this.setCurrentYear(this.currentYear.next);
+            */
         }
 
         this.currentYear.update(currentLeft);
+    },
+
+    setCurrentYear : function(year) {
+        console.log('Set currentYear', year.number);
+        this.currentYear = year;
     },
 
     appendYear : function() {
@@ -81,7 +81,10 @@ var Timeline = {
             this.afterAddingYear(newYear);
 
             console.log("appended");
+            return newYear;
         }
+
+        return this.currentYear;
     },
 
     prependYear : function() {
