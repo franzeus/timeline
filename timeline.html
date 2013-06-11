@@ -19,7 +19,8 @@
     }
 
     #timeline {
-      width:100%;
+      background:#FFF;
+      width:1000px;
       height:100px;
     }
 
@@ -79,7 +80,7 @@
 <body>
 
 <div id="timelineWrapper">
-  <div id="timeline"></div>
+  <canvas id="timeline" width="1000" height="100"></canvas>
 </div>
 
 <!-- JQuery is necessary -->
@@ -95,14 +96,16 @@
 <script type="text/javascript">
 $(document).ready(function() {
 
-  Timeline.init('canvas');
-
+  Timeline.init({
+    canvasSelector : 'timeline'
+  });
+/*
   Timeline.addEvent({
     day : 25,
     month : 10,
     year : 2013
   });
-
+*/
 });
 </script>
 </body>

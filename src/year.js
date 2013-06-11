@@ -1,33 +1,35 @@
-var Year = function(number, left) {
+var Year = function(options) {
 
-    this.number = number;
+    this.number = options.number;
     this.months = [];
-    this.left = left;
     this.id = this.number;
 
     this.next = null;
     this.prev = null;
 
-    this.node = this.buildNode();
+    this.height = 1;
+    this.width = Timeline.yearWidth;
+    this.x = options.x;
+    this.y = options.y - (this.height / 2);
+    this.color = '#FF0088';
 
     this.generateMonths();
-    this.startPosition = this.getPosition();
 };
 
-Year.prototype.buildNode = function() {
+Year.prototype.draw = function(ctx) {
+    this.drawYear(ctx);
+    this.drawMonths(ctx);
+};
 
-    var yearNode = jQuery('<div class="year" id="' + this.id + '" data-number="' + this.number + '"><div class="currentYearLabel">' + this.number + '</div></div>');
+Year.prototype.drawYear = function(ctx) {
+    ctx.fillStyle = this.color;
+    ctx.fillRect(this.x, this.y, this.width, this.height);
+};
 
-    yearNode.css({
-        width: Timeline.width
+Year.prototype.drawMonths = function(ctx) {
+    this.traverseMonths(function(month) {
+        month.draw(ctx);
     });
-
-    return yearNode;
-};
-
-Year.prototype.afterBuild = function() {
-    this.setNode(this.getNode());
-    this.labelNode = this.node.find('.currentYearLabel');
 };
 
 Year.prototype.update = function(currentLeft) {
@@ -36,34 +38,22 @@ Year.prototype.update = function(currentLeft) {
     if (currentLeft < this.getPosition().left) {
         newLeft = Math.abs(currentLeft);
     }
-
-    this.labelNode.css({
-        left : newLeft
-    });
-};
-
-Year.prototype.setNode = function(node) {
-    this.node = node;
-};
-
-Year.prototype.getNode = function() {
-    return Timeline.timeline.find('#' + this.id);
-};
-
-Year.prototype.getPosition = function() {
-    return this.node.position();
 };
 
 Year.prototype.generateMonths = function() {
 
+    var widthOfOneMonth = Timeline.yearWidth / 12;
+
     for (var i = 0; i < 12; i++) {
 
-        var days = Timeline.pixelPerDay * 31, // TODO: based on month and year
-            month = new Month(i, i * days, this.number);
+            month = new Month({
+                index : i,
+                year : this.number,
+                x : this.x + i * widthOfOneMonth,
+                y : this.y
+            });
 
         this.months.push(month);
-
-        this.node.append(month.$month);
     }
 };
 

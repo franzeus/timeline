@@ -1,7 +1,8 @@
-var Month = function(index, left, year) {
-    this.index = index;
-    this.number = index + 1;
-    this.year = year;
+var Month = function(options) {
+
+    this.index = options.index;
+    this.number = this.index + 1;
+    this.year = options.year;
     this.id = this.number + '_' + this.year;
     this.numberOfDays = 31;
 
@@ -9,30 +10,35 @@ var Month = function(index, left, year) {
     this.days = [];
     this.pixelPerDay = Timeline.pixelPerDay;
 
-    this.$month = jQuery('<ul class="month" id="' + this.id + '" data-number="' + this.number + '"></ul>');
-
-    this.$month.css({
-        left: left
-    });
-
-    this.left = left;
+    this.height = 20;
+    this.width = 2;
+    this.yearY = options.y;
+    this.x = options.x;
+    this.y = options.y - (this.height / 2);
+    this.color = '#222';
 
     this.generateDays();
-    this.setLabel();
+};
+
+Month.prototype.draw = function(ctx) {
+    ctx.fillStyle = this.color;
+    ctx.fillRect(this.x, this.y, this.width, this.height);
+
+    ctx.font = "8pt Arial";
+    ctx.fillText(this.getName(), this.x, this.y + 35);
+
+    this.drawDays(ctx);
+};
+
+Month.prototype.drawDays = function(ctx) {
+    this.traverseDays(function(day) {
+        day.draw(ctx);
+    });
 };
 
 Month.prototype.getName = function() {
     var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return months[this.number - 1];
-};
-
-Month.prototype.getDom = function() {
-    return Timeline.timeline.find('#' + this.id);
-};
-
-Month.prototype.setLabel = function() {
-    this.label  = jQuery('<div class="month-label">' + this.getName() + '</div>');
-    this.$month.prepend(this.label);
 };
 
 Month.prototype.addEvent = function(event) {
@@ -41,20 +47,35 @@ Month.prototype.addEvent = function(event) {
         eventNode = dayEvent.buildNode();
 
     this.events.push(dayEvent);
-    this.getDom().append(eventNode);
 
     return this;
 };
 
 Month.prototype.generateDays = function() {
 
+    var pixelPerDay = this.pixelPerDay;
+
     for (var i = 0; i < this.numberOfDays; i++) {
 
-        var day = new Day(i, this.number, this.year),
-            dayNode = day.buildNode();
+        var day = new Day({
+            index: i,
+            month: this.number,
+            year: this.year,
+            x : this.x + i * pixelPerDay,
+            y : this.yearY
+        });
 
         this.days.push(day);
-        this.$month.append(dayNode);
     }
 
+};
+
+Month.prototype.traverseDays = function(callback) {
+    var i = 0,
+        len = this.days.length,
+        self = this;
+
+    for (i = 0; i < len; i++) {
+        callback.call(self, this.days[i]);
+    }
 };

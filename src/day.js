@@ -1,36 +1,31 @@
-var Day = function(index, month, year) {
+var Day = function(options) {
 
-    this.index = index;
-    this.left = index * Timeline.pixelPerDay;
-    this.month = month;
-    this.year = year;
+    if (!options) return;
 
-    this.className = 'day';
+    this.index = options.index;
+    this.month = options.month;
+    this.year = options.year;
+
+    this.width = 1;
+    this.height = 10;
+    this.x = options.x;
+    this.y = options.y - (this.height / 2);
+    this.color = '#CCC';
 };
 
 Day.prototype = {
-
-    buildNode : function() {
-
-        var $newDay = jQuery('<li class="' + this.className + '"></li>');
-
-        $newDay.css({
-            'left': this.left
-        });
-
-        return $newDay;
+    draw : function(ctx) {
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x, this.y, this.width, this.height);
     }
 };
 
 // ====================================================================
+var DayEvent = function(options) {
 
-var DayEvent = function(event, index, month, year) {
+    Day.apply(this, [options]);
 
-    Day.apply(this, [index, month, year]);
-
-    this.left = event.day * Timeline.pixelPerDay;
-    this.event = event;
-
-    this.className = 'dayEvent';
+    this.event = optins.event;
+    this.x = this.event.day * Timeline.pixelPerDay;
 };
 DayEvent.prototype = new Day();
