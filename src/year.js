@@ -18,12 +18,18 @@ var Year = function(options) {
 
 Year.prototype.draw = function(ctx) {
     this.drawYear(ctx);
+    this.drawLabel(ctx);
     this.drawMonths(ctx);
 };
 
 Year.prototype.drawYear = function(ctx) {
     ctx.fillStyle = this.color;
     ctx.fillRect(this.x, this.y, this.width, this.height);
+};
+
+Year.prototype.drawLabel = function(ctx) {
+   ctx.font = "10pt Arial";
+   ctx.fillText(this.number, this.x, this.y - 15);
 };
 
 Year.prototype.drawMonths = function(ctx) {

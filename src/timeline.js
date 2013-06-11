@@ -30,6 +30,13 @@ var Timeline = {
     maxLeft : 0,
     timeline : null,
 
+    cameraX : 0,
+    cameraY : 0,
+
+    isMouseDown : false,
+    mouseDownX : 0,
+    scrollSpeed : 5,
+
     init : function(options) {
 
         this.timeline = document.getElementById(options.canvasSelector);
@@ -52,6 +59,46 @@ var Timeline = {
 
         var self = this;
 
+        this.timeline.addEventListener('mousedown', function(e) {
+            self.mousedownHandler.call(self, e);
+        });
+
+        this.timeline.addEventListener('mouseup', function(e) {
+            self.mouseupHandler.call(self, e);
+        });
+
+        this.timeline.addEventListener('mousemove', function(e) {
+            self.mousemoveHandler.call(self, e);
+        });
+
+    },
+
+    mousedownHandler : function(e) {
+        this.isMouseDown = true;
+        this.mouseDownX = e.clientX;
+    },
+
+    mouseupHandler : function(e) {
+        this.isMouseDown = false;
+    },
+
+    mousemoveHandler : function(e) {
+        if (this.isMouseDown) {
+
+            //console.log(this.cameraX, e.clientX);
+            var currentX = e.clientX;
+
+            // To next year
+            if (currentX < this.mouseDownX) {
+
+                this.cameraX -= this.scrollSpeed;
+
+            // To last year
+            } else {
+                this.cameraX += this.scrollSpeed;
+            }
+
+        }
     },
 
     initYears : function() {
@@ -69,7 +116,13 @@ var Timeline = {
 
         ctx.clearRect(0, 0, self.width, self.height);
 
+        ctx.save();
+
+        ctx.translate(self.cameraX, self.cameraY);
+
         self.drawYears();
+
+        ctx.restore();
 
         requestAnimationFrame(Timeline.draw);
     },
