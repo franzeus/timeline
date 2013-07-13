@@ -10,11 +10,10 @@ var Year = function(options) {
 
     this.scale = options.scale;
     this.height = 1;
-    /*
-    this.width = options.width;
-    this.x = options.x;
-    this.y = options.y - (this.height / 2);
-    */
+    this.width = 0;
+    this.x = 0;
+    this.y = 0;
+
     this.color = '#FF0088';
 
     this.labelY = this.y;
@@ -32,11 +31,11 @@ Year.prototype.drawYear = function(ctx, timeline) {
 
     this.width = timeline.width * timeline.scale;
     this.scaledHeight = this.height - timeline.scale;
-    this.x = this.width * this.index;
+    //this.x = this.width * this.index;
     this.y = (timeline.height / 2) - (this.height / 2);
 
     ctx.fillStyle = this.color;
-    ctx.fillRect(0, this.y, this.width, this.height);
+    ctx.fillRect(this.x, this.y, this.width, this.height);
 };
 
 Year.prototype.drawLabel = function(ctx, timeline) {

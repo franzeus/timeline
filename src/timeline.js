@@ -12,6 +12,7 @@ var Timeline = {
     isMouseDown : false,
     mouseDownX : 0,
     scrollSpeed : 10,
+    lockScrolling : false,
 
     init : function(options) {
 
@@ -21,17 +22,17 @@ var Timeline = {
         this.width = this.timeline.width;
         this.height = this.timeline.height;
 
-        this.yearWidth = this.width; // * this.scale;
+        this.yearWidth = this.width;
         this.pixelPerMonth = this.yearWidth / 12;
         this.pixelPerDay = this.yearWidth / 356;
 
         this.initYears();
-        this.registerEvents();
+        this.bindEvents();
 
         this.draw();
     },
 
-    registerEvents : function() {
+    bindEvents : function() {
 
         var self = this;
 
@@ -47,34 +48,55 @@ var Timeline = {
             self.mousemoveHandler.call(self, e);
         });
 
+        this.timeline.addEventListener('mouseout', function(e) {
+            self.mouseupHandler.call(self, e);
+        });
+
     },
 
     mousedownHandler : function(e) {
         this.isMouseDown = true;
         this.mouseDownX = e.clientX;
+        this.lockScrolling = false;
     },
 
     mouseupHandler : function(e) {
         this.isMouseDown = false;
+        this.lockScrolling = true;
     },
 
     mousemoveHandler : function(e) {
-        if (this.isMouseDown) {
 
-            //console.log(this.cameraX, e.clientX);
-            var currentX = e.clientX;
+        if (this.isMouseDown && !this.lockScrolling) {
+
+            var currentX = e.clientX,
+                direction = 0;
 
             // To next year
             if (currentX < this.mouseDownX) {
 
-                this.cameraX -= this.scrollSpeed;
+                direction = -1;
+                //this.cameraX -= this.scrollSpeed;
+                this.currentYear.x -= this.scrollSpeed;
 
             // To last year
             } else {
-                this.cameraX += this.scrollSpeed;
+                direction = 1;
+                //this.cameraX += this.scrollSpeed;
+                this.currentYear.x += this.scrollSpeed;
             }
 
+            this.update(direction);
+
+            this.lockScrolling = true;
         }
+
+        var self = this;
+        setTimeout(function() {
+            self.lockScrolling = false;
+        }, 100);
+
+        e.stopPropagation();
     },
 
     initYears : function() {
@@ -94,9 +116,12 @@ var Timeline = {
 
         ctx.save();
 
-        ctx.translate(self.cameraX, self.cameraY);
+        //ctx.translate(self.cameraX, self.cameraY);
 
         self.drawYears();
+
+        ctx.fillStyle = '#FF000';
+        ctx.fillRect(self.cameraX, 0, 1, self.height);
 
         ctx.restore();
 
@@ -116,8 +141,28 @@ var Timeline = {
         });
     },
 
-    update : function(position) {
+    update : function(direction) {
 
+        console.log(this.cameraX, this.currentYear.x, direction);
+
+        // Scrolling to prev year
+        if (this.cameraX > this.currentYear.x && direction > 0) {
+            
+            console.log("Scrolling to prev year");
+            //if (!this.currentYear.prev)
+
+
+        // Scrolling to next year
+        } else {
+
+            console.log("Scrolling to next year");
+
+        }
+
+
+
+
+        return;
         // Append new year
         var currentLeft = position.left,
             currentIndex = this.currentYear.index,
@@ -194,12 +239,7 @@ var Timeline = {
 
         var newYear = new Year({
             index : this.years.length,
-            number : year            
-            /*
-                x : this.yearWidth * this.years.length,
-                y : this.height / 2,
-                width : this.yearWidth,
-            */
+            number : year
         });
 
         this.years.push(newYear);

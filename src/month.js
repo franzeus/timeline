@@ -28,7 +28,6 @@ var Month = function(options) {
 
 Month.prototype.draw = function(ctx, options) {
     
-
     var timeline = options.timeline;
     var year = options.year;
 
@@ -45,9 +44,10 @@ Month.prototype.draw = function(ctx, options) {
     ctx.fillRect(this.x, this.y, width, height);
 
     this.labelY = this.y - 5;
+    this.labelX = (this.x + widthOfOneYear);
     var fontSize = this.fontSize + timeline.scale;
     ctx.font = fontSize + "pt Arial";
-    ctx.fillText(this.getName(), this.x, this.labelY);
+    ctx.fillText(this.getName(), this.labelX, this.labelY);
 
 };
 
