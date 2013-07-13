@@ -25,8 +25,13 @@ var Timeline = {
         this.draw();
     },
 
+    reset : function() {
+        this.months = [];
+    },
 
     initMonths : function(startMonth, startYear) {
+
+        this.reset();
 
         this.monthWidth = (this.width / this.scale);
 
@@ -156,7 +161,7 @@ var Timeline = {
 
         this.traverseMonths(function(i, month) {
 
-            month.draw(this.ctx);
+            month.draw(this.ctx, this.scale);
 
         });
 
@@ -189,6 +194,7 @@ var Timeline = {
 
         };
 
+        // Prepend a month before the currentMonth if that is the first one
         if (this.months.indexOf(this.currentMonth) === 0) {
 
             var month = this.getPrevMonthObject();
@@ -196,6 +202,7 @@ var Timeline = {
             this.months.pop();
             this.months.unshift(month);
 
+        // Append a month after the currentMonth if that is the last one
         } else if (this.months.indexOf(this.currentMonth) === this.months.length - 1) {
 
             var month = this.getNextMonthObject();

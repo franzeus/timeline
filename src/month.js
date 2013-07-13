@@ -26,8 +26,7 @@ var Month = function(options) {
     this.generateDays();
 };
 
-Month.prototype.draw = function(ctx) {
-
+Month.prototype.draw = function(ctx, scale) {
     var pixelPerDay = Math.round(this.baseWidth / this.numberOfDays);
 
     this.drawDays(ctx, this, { y: 75 }, pixelPerDay, this.scale);
@@ -43,24 +42,24 @@ Month.prototype.draw = function(ctx) {
 
 
     return;
+    /*
     var timeline = options.timeline;
     var year = options.year;
+    */
 
     var widthOfOneYear = year.width / 12;
-    var width = this.width * timeline.scale;
-    var height = this.height * timeline.scale;
+    var width = this.width * scale;
+    var height = this.height * scale;
     
-    this.x = year.x + this.index * widthOfOneYear * timeline.scale;
-    this.y = year.y - (height / 2);
-    
-    
+    this.x = this.x + this.index * widthOfOneYear * scale;
+    this.y = year.y - (height / 2);   
 
     ctx.fillStyle = this.color;
     ctx.fillRect(this.x, this.y, width, height);
 
     this.labelY = this.y - 5;
     this.labelX = (this.x + widthOfOneYear);
-    var fontSize = this.fontSize + timeline.scale;
+    var fontSize = this.fontSize + scale;
     ctx.font = fontSize + "pt Arial";
     ctx.fillText(this.getName(), this.labelX, this.labelY);
 
@@ -90,10 +89,10 @@ Month.prototype.addEvent = function(event) {
 
 Month.prototype.generateDays = function() {
 
-    for (var i = 0; i < this.numberOfDays; i++) {
+    for (var i = 1; i <= this.numberOfDays; i++) {
 
         var day = new Day({
-            index: i,
+            index: i - 1,
             month: this.number,
             year: this.year,
             x : this.x + i * this.pixelPerDay * this.scale,
