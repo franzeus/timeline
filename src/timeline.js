@@ -1,13 +1,10 @@
 var Timeline = {
 
-    years : [],
     scale : 2,
-    currentYear : null,
-    maxLeft : 0,
     timeline : null,
 
-    cameraX : 0,
-    cameraY : 0,
+    currentMonth : null,
+    months : [],
 
     isMouseDown : false,
     mouseDownX : 0,
@@ -22,15 +19,51 @@ var Timeline = {
         this.width = this.timeline.width;
         this.height = this.timeline.height;
 
-        this.yearWidth = this.width;
-        this.pixelPerMonth = this.yearWidth / 12;
-        this.pixelPerDay = this.yearWidth / 356;
-
-        this.initYears();
+        this.initMonths();
         this.bindEvents();
 
         this.draw();
     },
+
+
+    initMonths : function(startMonth, startYear) {
+
+        this.monthWidth = (this.width / this.scale);
+
+        var now = new Date(),
+            startMonth = startMonth || now.getMonth(),
+            startYear = startYear || now.getFullYear(),
+        
+            initMonthsLen = Math.round(this.width / this.monthWidth) + 2,
+            initMonthX = this.monthWidth * -1;
+
+        for (var i = 0; i < initMonthsLen; i++) {
+            
+            var x = initMonthX + this.monthWidth * i;
+            var year = startYear;
+            var monthIndex = startMonth + i - 1;
+            
+            // Prev year
+            if (i === 0 && startMonth === 0) {
+                year = startYear - 1;
+                monthIndex = 11;
+            }
+
+            // Next Year
+            if (i > 1 && startMonth === 11) {
+                year = startYear + 1;
+                monthIndex = 0;
+            }
+            
+            var month = this.getMonthObject(i, monthIndex, x, year);
+            this.months.push(month);
+        };
+
+        this.currentMonth = this.months[1];
+
+    },
+
+    // ---
 
     bindEvents : function() {
 
@@ -70,24 +103,22 @@ var Timeline = {
         if (this.isMouseDown && !this.lockScrolling) {
 
             var currentX = e.clientX,
+                x = 0,
                 direction = 0;
 
             // To next year
             if (currentX < this.mouseDownX) {
 
                 direction = -1;
-                //this.cameraX -= this.scrollSpeed;
-                this.currentYear.x -= this.scrollSpeed;
+                x -= this.scrollSpeed;
 
             // To last year
             } else {
                 direction = 1;
-                //this.cameraX += this.scrollSpeed;
-                this.currentYear.x += this.scrollSpeed;
+                x += this.scrollSpeed;
             }
 
-            this.update(direction);
-
+            this.update(x, direction);
             this.lockScrolling = true;
         }
 
@@ -99,14 +130,6 @@ var Timeline = {
         e.stopPropagation();
     },
 
-    initYears : function() {
-        var year = new Date().getFullYear();
-            newYear = this.addYear(year, 0);
-
-        this.setCurrentYear(newYear);
-        this.nextMaxLeft = this.yearWidth;
-    },
-
     draw : function() {
 
         var ctx = Timeline.ctx,
@@ -116,16 +139,24 @@ var Timeline = {
 
         ctx.save();
 
-        //ctx.translate(self.cameraX, self.cameraY);
+        self.drawMonths();
 
-        self.drawYears();
-
-        ctx.fillStyle = '#FF000';
-        ctx.fillRect(self.cameraX, 0, 1, self.height);
+        ctx.fillStyle = '#FF0088';
+        ctx.fillRect(0, self.height / 2, self.width, 1);
 
         ctx.restore();
 
         requestAnimationFrame(Timeline.draw);
+    },
+
+    drawMonths : function() {
+
+        this.traverseMonths(function(i, month) {
+
+            month.draw(this.ctx);
+
+        });
+
     },
 
     drawYears : function() {
@@ -141,110 +172,91 @@ var Timeline = {
         });
     },
 
-    update : function(direction) {
+    update : function(x, direction) {
 
-        console.log(this.cameraX, this.currentYear.x, direction);
+        for (var i = 0; i < this.months.length; i++) {
 
-        // Scrolling to prev year
-        if (this.cameraX > this.currentYear.x && direction > 0) {
-            
-            console.log("Scrolling to prev year");
-            //if (!this.currentYear.prev)
+            var month = this.months[i];
 
+            month.x += x;
 
-        // Scrolling to next year
-        } else {
+            if (month.x > ((this.width / 4) * -1) && month.x < this.width / 4 && this.currentMonth !== month) {
+                this.currentMonth = month;
+                //console.log("currentMonth", month.number, month.x, ">" , ((this.width / 4) * -1), " && ", month.x, " < ", this.width / 2);
+            }
 
-            console.log("Scrolling to next year");
+        };
 
+        if (this.months.indexOf(this.currentMonth) === 0) {
+
+            var month = this.getPrevMonthObject();
+
+            this.months.pop();
+            this.months.unshift(month);
+
+        } else if (this.months.indexOf(this.currentMonth) === this.months.length - 1) {
+
+            var month = this.getNextMonthObject();
+
+            this.months.shift();
+            this.months.push(month);
         }
 
-
-
-
-        return;
-        // Append new year
-        var currentLeft = position.left,
-            currentIndex = this.currentYear.index,
-            yearWidth = this.width,
-            currentMaxLeft = yearWidth * Math.max(1, currentIndex);
-
-        // Append new year when current year is dragged to left
-        if (currentMaxLeft + (currentLeft * -1) > this.nextMaxLeft) {
-            this.nextMaxLeft = this.width * Math.max(2, this.years.length);
-            var newYear = this.appendYear.call(this);
-        }
-
-        if (currentMaxLeft + (currentLeft * -1) > this.nextMaxLeft - this.width / 2) {
-            /*
-            this.currentYear.update(0);
-            console.log("update currentYear", this.currentYear.next);
-            this.setCurrentYear(this.currentYear.next);
-            */
-        }
-
-        this.currentYear.update(currentLeft);
     },
 
-    setCurrentYear : function(year) {
-        console.log('Set currentYear', year.number);
-        this.currentYear = year;
+    getNextMonthObject : function() {
+
+        var lastIndex = this.months.length - 1,
+            monthIndex = this.currentMonth.monthIndex === 11 ? 0 : this.currentMonth.monthIndex + 1,
+            x = this.currentMonth.x + this.currentMonth.baseWidth,
+            year = this.currentMonth.monthIndex === 11 ? this.currentMonth.year + 1 : this.currentMonth.year;
+
+        return this.getMonthObject(lastIndex, monthIndex, x, year);
+
     },
 
-    appendYear : function() {
+    getPrevMonthObject : function() {
 
-        var lastYear = this.years[this.years.length - 1],
-            lastYearNumber = lastYear.number,
-            newYearNumber = lastYearNumber + 1;
+        var firstIndex = 0,
+            monthIndex = this.currentMonth.monthIndex === 0 ? 0 : this.currentMonth.monthIndex - 1,
+            x = this.currentMonth.x - this.currentMonth.baseWidth,
+            year = this.currentMonth.monthIndex === 0 ? this.currentMonth.year - 1 : this.currentMonth.year;
 
-        if (this.yearExists(newYearNumber) < 0) {
-            var newYear = this.addYear(newYearNumber);
+        return this.getMonthObject(firstIndex, monthIndex, x, year);
 
-            newYear.setPrev(lastYear);
-            lastYear.setNext(newYear);
-            this.timeline.append(newYear.node);
-            this.afterAddingYear(newYear);
-
-            console.log("appended");
-            return newYear;
-        }
-
-        return this.currentYear;
     },
 
-    prependYear : function() {
+    getMonthObject : function(index, monthIndex, x, year) {
 
-        var firstYear = this.timeline.find('.year').first(),
-            firstYearNumber = parseInt(firstYear.data('number'), 10),
-            newYearNumber = firstYearNumber - 1;
+        var baseWidth = (this.width / this.scale);
 
-        if (this.yearExists(newYearNumber) < 0) {
-            var newYear = this.addYear(newYearNumber);
-            newYear.setNext(firstYear);
-            firstYear.setPrev(newYear);
-            this.timeline.prepend(newYear.node);
-            this.afterAddingYear(newYear);
-        }
-    },
-
-    afterAddingYear : function(year) {
-    },
-
-
-    setYearLabel : function(year) {
-        jQuery('#currentYearLabel').text(year);
-    },
-
-    addYear : function(year) {
-
-        var newYear = new Year({
-            index : this.years.length,
-            number : year
+        var month = new Month({
+            index : index,
+            monthIndex : monthIndex,
+            x : x,
+            baseWidth : baseWidth,
+            year : year,
+            timeline : this
         });
 
-        this.years.push(newYear);
+        return month;
+    },
 
-        return newYear;
+
+    getNumberOfDays : function(month, year) {
+
+        var totalFeb = 28;
+
+        // Feb feels special
+        if (month === 1) {
+            if ( (year % 100 !== 0) && (year % 4 ===0) || (year % 400 === 0)) {
+                totalFeb = 29;
+            }
+        }
+
+        var dayMap = [31, totalFeb, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+        return dayMap[month];
     },
 
     addEvent : function(event) {
@@ -271,31 +283,16 @@ var Timeline = {
         return -1;
     },
 
-    traverseYears : function(callback) {
+    traverseMonths : function(callback) {
 
-        var len = this.years.length,
+        var len = this.months.length,
             i = 0;
 
         for (i; i < len; i++) {
-            callback.call(this, i, this.years[i]);
+            callback.call(this, i, this.months[i]);
         }
 
-    },
-
-    findYearByNumber : function(searchedYear) {
-
-        var yearObj = null,
-            len = this.years.length,
-            i = 0;
-
-        for (i; i < len; i++) {
-            if (this.years[i].number === searchedYear) {
-                yearObj = this.years[i];
-            }
-        }
-
-        return yearObj;
-    },
+    },    
 
     getPositionOfDate : function(day, month, year) {
 
@@ -346,17 +343,5 @@ var Timeline = {
             }, 60);
         }
 
-    },
-
-    setCameraPosition : function(x, y) {
-
-        var x = x || 0;
-        var y = y || 0;
-
-        this.cameraX = x;
-        this.cameraY = y;
-
-        return this;
-
-    },
+    }    
 };

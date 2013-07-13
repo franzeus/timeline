@@ -19,7 +19,7 @@ var Day = function(options) {
 Day.prototype = {
     draw : function(ctx, month, year, pixelPerDay, scale) {
 
-        this.x = month.x + this.index * pixelPerDay * scale;
+        this.x = month.x + this.index * pixelPerDay; // * scale;
         this.y = year.y - (this.height * scale / 2) ;
 
         var width = this.width * scale;
