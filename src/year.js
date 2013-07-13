@@ -1,5 +1,6 @@
 var Year = function(options) {
 
+    this.index = options.index; // begins with 1
     this.number = options.number;
     this.months = [];
     this.id = this.number;
@@ -7,34 +8,51 @@ var Year = function(options) {
     this.next = null;
     this.prev = null;
 
+    this.scale = options.scale;
     this.height = 1;
-    this.width = Timeline.yearWidth;
+    /*
+    this.width = options.width;
     this.x = options.x;
     this.y = options.y - (this.height / 2);
+    */
     this.color = '#FF0088';
+
+    this.labelY = this.y;
 
     this.generateMonths();
 };
 
-Year.prototype.draw = function(ctx) {
-    this.drawYear(ctx);
-    this.drawLabel(ctx);
-    this.drawMonths(ctx);
+Year.prototype.draw = function(ctx, timeline) {
+    this.drawYear(ctx, timeline);
+    this.drawLabel(ctx, timeline);
+    this.drawMonths(ctx, timeline);
 };
 
-Year.prototype.drawYear = function(ctx) {
+Year.prototype.drawYear = function(ctx, timeline) {
+
+    this.width = timeline.width * timeline.scale;
+    this.scaledHeight = this.height - timeline.scale;
+    this.x = this.width * this.index;
+    this.y = (timeline.height / 2) - (this.height / 2);
+
     ctx.fillStyle = this.color;
-    ctx.fillRect(this.x, this.y, this.width, this.height);
+    ctx.fillRect(0, this.y, this.width, this.height);
 };
 
-Year.prototype.drawLabel = function(ctx) {
+Year.prototype.drawLabel = function(ctx, timeline) {
    ctx.font = "10pt Arial";
-   ctx.fillText(this.number, this.x, this.y - 15);
+   ctx.fillText(this.number, this.x, this.y - (timeline.scale * 20));
 };
 
-Year.prototype.drawMonths = function(ctx) {
+Year.prototype.drawMonths = function(ctx, timeline) {
+
+    var options = {
+        timeline : timeline,
+        year : this
+    };
+
     this.traverseMonths(function(month) {
-        month.draw(ctx);
+        month.draw(ctx, options);
     });
 };
 
@@ -52,11 +70,19 @@ Year.prototype.generateMonths = function() {
 
     for (var i = 0; i < 12; i++) {
 
+            var x = this.x + i * widthOfOneMonth * this.scale;
+
+            if (i > 0) {
+                var lastMonth = this.months[i - 1];
+                x = lastMonth.x + lastMonth.getComputedWidth();
+            }
+
             month = new Month({
                 index : i,
                 year : this.number,
-                x : this.x + i * widthOfOneMonth,
-                y : this.y
+                x : x,
+                y : this.y,
+                scale : this.scale
             });
 
         this.months.push(month);

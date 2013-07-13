@@ -8,8 +8,8 @@
     body { font-family: 'Arial', sans-serif; font-size: 0.9em; margin:0; line-height:1.5em; background:#F6F6F6; color:#09f; }
 
     #timelineWrapper {
-      width:80%;
-      height:100px;
+      width:100%;
+      height:150px;
       margin:auto;
       margin-top:10em;
       position:relative;
@@ -19,9 +19,10 @@
     }
 
     #timeline {
-      background:#FFF;
-      width:1000px;
-      height:100px;
+      margin:auto;
+      background:#F6F6F6;
+      width:1600px;
+      height:150px;
     }
 
     .year {
@@ -80,10 +81,16 @@
 <body>
 
 <div id="timelineWrapper">
-  <canvas id="timeline" width="1000" height="100"></canvas>
+  <canvas id="timeline" width="1600" height="150"></canvas>
 </div>
 
+<button class="test">GoTo</button>
+
+<button class="zoomIn">&plus;</button>
+<button class="zoomOut">&minus;</button>
+
 <!-- JQuery is necessary -->
+<script type="text/javascript" src="src/lib/utils.js"></script>
 <script type="text/javascript" src="src/lib/jquery.min.js"></script>
 <script type="text/javascript" src="src/lib/jquery-ui-1.9.0.custom/js/jquery-ui-1.9.0.custom.min.js"></script>
 
@@ -99,6 +106,28 @@ $(document).ready(function() {
   Timeline.init({
     canvasSelector : 'timeline'
   });
+
+
+  jQuery('.test').click(function() {
+
+    Timeline.initAnimateToDate(25,6,2013);
+
+  });
+
+  jQuery('.zoomIn').click(function() {
+
+    Timeline.scale += 0.5;
+    console.log(Timeline.scale);
+
+  });
+
+  jQuery('.zoomOut').click(function() {
+
+    Timeline.scale -= 0.5;
+    console.log(Timeline.scale);
+
+  });
+
 /*
   Timeline.addEvent({
     day : 25,

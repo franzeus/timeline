@@ -1,31 +1,7 @@
-(function() {
-    var lastTime = 0;
-    var vendors = ['ms', 'moz', 'webkit', 'o'];
-    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-        window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame']
-                                   || window[vendors[x]+'CancelRequestAnimationFrame'];
-    }
-
-    if (!window.requestAnimationFrame)
-        window.requestAnimationFrame = function(callback, element) {
-            var currTime = new Date().getTime();
-            var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-            var id = window.setTimeout(function() { callback(currTime + timeToCall); },
-              timeToCall);
-            lastTime = currTime + timeToCall;
-            return id;
-        };
-
-    if (!window.cancelAnimationFrame)
-        window.cancelAnimationFrame = function(id) {
-            clearTimeout(id);
-        };
-}());
-
 var Timeline = {
 
     years : [],
+    scale : 2,
     currentYear : null,
     maxLeft : 0,
     timeline : null,
@@ -35,7 +11,7 @@ var Timeline = {
 
     isMouseDown : false,
     mouseDownX : 0,
-    scrollSpeed : 5,
+    scrollSpeed : 10,
 
     init : function(options) {
 
@@ -45,7 +21,7 @@ var Timeline = {
         this.width = this.timeline.width;
         this.height = this.timeline.height;
 
-        this.yearWidth = 2000;
+        this.yearWidth = this.width; // * this.scale;
         this.pixelPerMonth = this.yearWidth / 12;
         this.pixelPerDay = this.yearWidth / 356;
 
@@ -128,8 +104,15 @@ var Timeline = {
     },
 
     drawYears : function() {
+
+        var options = {
+            width : this.width,
+            height : this.height,
+            scale : this.scale
+        }
+
         this.traverseYears(function(key, year) {
-            year.draw(this.ctx);
+            year.draw(this.ctx, options);
         });
     },
 
@@ -210,9 +193,13 @@ var Timeline = {
     addYear : function(year) {
 
         var newYear = new Year({
-            number : year,
-            x : this.yearWidth * this.years.length,
-            y : this.height / 2
+            index : this.years.length,
+            number : year            
+            /*
+                x : this.yearWidth * this.years.length,
+                y : this.height / 2,
+                width : this.yearWidth,
+            */
         });
 
         this.years.push(newYear);
@@ -253,5 +240,83 @@ var Timeline = {
             callback.call(this, i, this.years[i]);
         }
 
-    }
+    },
+
+    findYearByNumber : function(searchedYear) {
+
+        var yearObj = null,
+            len = this.years.length,
+            i = 0;
+
+        for (i; i < len; i++) {
+            if (this.years[i].number === searchedYear) {
+                yearObj = this.years[i];
+            }
+        }
+
+        return yearObj;
+    },
+
+    getPositionOfDate : function(day, month, year) {
+
+        var day = day || 1;
+        var month = month || 1;
+        var year = year || this.currentYear.number;
+
+        var yearObj = this.findYearByNumber(year);
+        var monthObj = yearObj.months[month - 1];
+        var dayObj = monthObj.days[day - 1];
+
+        var x = dayObj.x;
+
+        var direction = this.currentYear.number >= yearObj.number ? -1 : 1;
+
+        return { x : x , direction: direction };
+    },
+
+
+    goToDate : function(day, month, year) {
+
+        var position = this.getPositionOfDate(day, month, year);
+        this.setCameraPosition(position.x * position.direction);
+    },
+
+    initAnimateToDate : function(day, month, year) {
+
+        var position = this.getPositionOfDate(day, month, year);
+        this.animateToDate(Math.round(position.x * position.direction), position.direction);
+
+    },
+
+    animateToDate : function(x, direction) {
+
+        var cameraX = Math.round(this.cameraX),
+            self = this;
+
+        //console.log(cameraX, x);
+
+        if (cameraX >= x) {
+
+            setTimeout(function() {
+                var newX = cameraX + 100 * direction * self.scale;
+
+                self.setCameraPosition(newX);
+                self.animateToDate(x, direction);
+
+            }, 60);
+        }
+
+    },
+
+    setCameraPosition : function(x, y) {
+
+        var x = x || 0;
+        var y = y || 0;
+
+        this.cameraX = x;
+        this.cameraY = y;
+
+        return this;
+
+    },
 };
