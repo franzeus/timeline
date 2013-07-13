@@ -3,6 +3,7 @@ var Timeline = {
     years : [],
     currentYear : null,
     maxLeft : 0,
+    lastCurrentLeft : 0,
 
     init : function() {
 
@@ -12,6 +13,7 @@ var Timeline = {
 
         this.initYears();
         this.registerEvents();
+
     },
 
     registerEvents : function() {
@@ -48,16 +50,40 @@ var Timeline = {
         this.timeline.append(newYear.node);
         this.currentYear = newYear;
         newYear.afterBuild();
+
         this.maxLeft = this.currentYear.node.width();
     },
 
     update : function(currentLeft, currentMaxLeft) {
 
+        console.log(currentLeft);
+
+        if (currentLeft > this.lastCurrentLeft) {
+
+            this.direction = 1; // to next year
+
+        } else {
+
+            this.direction = -1; // to prev year
+
+        }
+
+
+        this.lastCurrentLeft = currentLeft;
+
+        return;
+
         if (currentMaxLeft + (currentLeft * -1) > this.maxLeft - this.width / 2) {
 
             var index = Math.max(2, this.years.length) + 1;
             this.maxLeft = this.width * index;
-            console.log(currentLeft);
+            this.currentYear.update(0);
+            console.log("update currentYear", this.currentYear.next);
+            this.currentYear = this.currentYear.next;
+
+        } else if (currentMaxLeft + (currentLeft * -1) < this.maxLeft - this.width / 2) {
+            var index = Math.max(2, this.years.length) + 1;
+            this.maxLeft = this.width * index;
             this.currentYear.update(0);
             console.log("update currentYear", this.currentYear.next);
             this.currentYear = this.currentYear.next;
