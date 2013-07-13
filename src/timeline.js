@@ -59,11 +59,14 @@ var Timeline = {
             this.months.push(month);
         };
 
-        this.currentMonth = this.months[1];
-
+        this.setCurrentMonth(this.months[Math.max(this.months.length - 1, 1)]);
     },
 
-    // ---
+    setCurrentMonth : function(month) {
+
+        this.currentMonth = month;
+
+    },
 
     bindEvents : function() {
 
@@ -181,8 +184,7 @@ var Timeline = {
             month.x += x;
 
             if (month.x > ((this.width / 4) * -1) && month.x < this.width / 4 && this.currentMonth !== month) {
-                this.currentMonth = month;
-                //console.log("currentMonth", month.number, month.x, ">" , ((this.width / 4) * -1), " && ", month.x, " < ", this.width / 2);
+                this.setCurrentMonth(month);
             }
 
         };
