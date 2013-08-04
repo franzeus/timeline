@@ -14,7 +14,6 @@ var Month = function(options) {
     this.isTodaysMonth = this.monthIndex === new Date().getMonth() && this.isTodaysYear;
 
     this.labelText = this.getName() + "." + this.year;
-    console.log(options.year);
 
     this.events = [];
     this.days = [];
@@ -77,7 +76,7 @@ Month.prototype.update = function() {
 
 Month.prototype.drawDays = function(ctx) {
 
-    var pixelPerDay = Math.round(this.baseWidth / this.numberOfDays);
+    var pixelPerDay = Math.floor(this.baseWidth / this.numberOfDays);
 
     this.traverseDays(function(day) {
         day.draw(ctx, this, { y: 75 }, pixelPerDay, this.timeline.scale);
@@ -104,7 +103,7 @@ Month.prototype.generateDays = function() {
     for (var i = 1; i <= this.numberOfDays; i++) {
 
         var day = new Day({
-            index: i - 1,
+            index: i,
             month: this,
             year: this.year,
             x : this.x + i * this.pixelPerDay * this.scale,

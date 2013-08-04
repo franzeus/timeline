@@ -6,7 +6,7 @@ var Day = function(options) {
     this.month = options.month;
     this.year = options.year;
 
-    this.isToday = this.month.isTodaysMonth && new Date().getDate() === this.index;
+    this.isToday = this.isDayToday();
 
     this.scale = options.scale;
 
@@ -32,16 +32,24 @@ Day.prototype = {
         ctx.fillStyle = this.color;
         ctx.fillRect(this.x, this.y, width, height);
 
+        //TODO: Scaleable
+        if (this.isToday) {
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = this.color;
+            ctx.stroke();
+            ctx.strokeRect(this.x - 5, this.labelY + scale - 9, width + 9, 11);
+        }
+
         var fontSize = this.fontSize + Math.round(scale);
         ctx.font = fontSize + "pt Arial";
         ctx.fillText(this.index, this.x - 2, this.labelY + scale);
     },
 
-    isToday : function() {
+    isDayToday : function() {
         
         var isCurrentDay = new Date().getDate() === this.index;
 
-        return this.year.isTodaysYear && this.month.isTodaysMonth && isCurrentDay;
+        return this.month.isTodaysMonth && isCurrentDay;
     }
 };
 

@@ -243,7 +243,7 @@ var Timeline = {
     getMonthObject : function(index, monthIndex, x, year) {
 
         var baseWidth = (this.width / this.scale);
-
+        
         var month = new Month({
             index : index,
             monthIndex : monthIndex,
