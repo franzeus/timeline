@@ -6,11 +6,13 @@ var Day = function(options) {
     this.month = options.month;
     this.year = options.year;
 
+    this.isToday = this.month.isTodaysMonth && new Date().getDate() === this.index;
+
     this.scale = options.scale;
 
     this.width = 1;
     this.height = 10;
-    this.color = '#BBB';
+    this.color = this.isToday ? '#FF0000' : '#BBB';
 
     this.labelY = 0;
     this.fontSize = 5;
@@ -33,6 +35,13 @@ Day.prototype = {
         var fontSize = this.fontSize + Math.round(scale);
         ctx.font = fontSize + "pt Arial";
         ctx.fillText(this.index, this.x - 2, this.labelY + scale);
+    },
+
+    isToday : function() {
+        
+        var isCurrentDay = new Date().getDate() === this.index;
+
+        return this.year.isTodaysYear && this.month.isTodaysMonth && isCurrentDay;
     }
 };
 

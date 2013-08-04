@@ -5,6 +5,8 @@ var Year = function(options) {
     this.months = [];
     this.id = this.number;
 
+    this.isTodaysYear = this.number === new Date().getFullYear();
+
     this.next = null;
     this.prev = null;
 
@@ -65,7 +67,8 @@ Year.prototype.update = function(currentLeft) {
 
 Year.prototype.generateMonths = function() {
 
-    var widthOfOneMonth = Timeline.yearWidth / 12;
+    var widthOfOneMonth = Timeline.yearWidth / 12,
+        self = this;
 
     for (var i = 0; i < 12; i++) {
 
@@ -78,12 +81,12 @@ Year.prototype.generateMonths = function() {
 
             month = new Month({
                 index : i,
-                year : this.number,
+                year : self,
                 x : x,
                 y : this.y,
                 scale : this.scale
             });
-
+        console.log(month.year);
         this.months.push(month);
     }
 };

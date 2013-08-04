@@ -10,6 +10,12 @@ var Month = function(options) {
     this.numberOfDays = this.getNumberOfDays(this.monthIndex, this.year);
     this.id = this.number + '_' + this.year;
 
+    this.isTodaysYear = this.year === new Date().getFullYear();
+    this.isTodaysMonth = this.monthIndex === new Date().getMonth() && this.isTodaysYear;
+
+    this.labelText = this.getName() + "." + this.year;
+    console.log(options.year);
+
     this.events = [];
     this.days = [];
 
@@ -46,7 +52,7 @@ Month.prototype.draw = function(ctx, timeline) {
     var fontSize = this.fontSize;
 
     ctx.font = fontSize + "pt Arial";
-    ctx.fillText(this.getName() + "." + this.year, this.labelX, this.labelY);
+    ctx.fillText(this.labelText, this.labelX, this.labelY);
 
 };
 
@@ -99,7 +105,7 @@ Month.prototype.generateDays = function() {
 
         var day = new Day({
             index: i - 1,
-            month: this.number,
+            month: this,
             year: this.year,
             x : this.x + i * this.pixelPerDay * this.scale,
             y : this.yearY,
