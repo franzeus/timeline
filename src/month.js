@@ -30,15 +30,13 @@ var Month = function(options) {
 
     this.color = '#222';
 
-    this.labelY = this.y - 5;
+    this.labelY = this.y - 15;
     this.fontSize = 8;
 
     this.generateDays();
 };
 
-Month.prototype.draw = function(ctx, timeline) {
-
-    //this.computeStyle();
+Month.prototype.draw = function(ctx) {
 
     var x = this.x + this.offsetX;
 
@@ -56,7 +54,7 @@ Month.prototype.draw = function(ctx, timeline) {
 };
 
 Month.prototype.update = function() {
-
+    /*
     var timeline = this.timeline;
 
     this.baseWidth = timeline.width / this.timeline.scale;
@@ -71,6 +69,9 @@ Month.prototype.update = function() {
     this.y = timeline.height / 2 - (this.height / 2);
     this.width = 2 * timeline.scale;
     this.height = 20 * timeline.scale;
+    */
+
+    var pixelPerDay = Math.floor(this.baseWidth / this.numberOfDays);
 
 };
 

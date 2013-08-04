@@ -103,26 +103,28 @@
 <script type="text/javascript">
 $(document).ready(function() {
 
-  Timeline.init({
+  var timeline = new Timeline();
+
+  timeline.init({
     canvasSelector : 'timeline'
   });
 
 
   jQuery('.test').click(function() {
 
-    Timeline.initAnimateToDate(25,6,2013);
+    timeline.initAnimateToDate(25,6,2013);
 
   });
 
   jQuery('.zoomIn').click(function() {
 
-    Timeline.zoomIn();
+    timeline.zoomIn();
 
   });
 
   jQuery('.zoomOut').click(function() {
 
-    Timeline.zoomOut();;
+    timeline.zoomOut();;
 
   });
 

@@ -1,4 +1,8 @@
-var Timeline = {
+var Timeline = function() {
+
+};
+
+Timeline.prototype = {
 
     timeline : null,
 
@@ -10,8 +14,9 @@ var Timeline = {
     scrollSpeed : 10,
     lockScrolling : false,
 
-    scale : 2,
-    zoomFactor : 0.5,
+    scale : 1.5,
+    zoom : 1,
+    zoomFactor : 0.1,
 
     init : function(options) {
 
@@ -24,7 +29,7 @@ var Timeline = {
         this.initMonths();
         this.bindEvents();
 
-        this.draw();
+        this.run();
     },
 
     reset : function() {
@@ -41,10 +46,10 @@ var Timeline = {
             startMonth = startMonth || now.getMonth(),
             startYear = startYear || now.getFullYear(),
         
-            initMonthsLen = Math.round(this.width / this.monthWidth) + 2,
+            initMonthsArrayLen = Math.round(this.width / this.monthWidth) + 2,
             initMonthX = this.monthWidth * -1;
 
-        for (var i = 0; i < initMonthsLen; i++) {
+        for (var i = 0; i < initMonthsArrayLen; i++) {
             
             var x = initMonthX + this.monthWidth * i;
             var year = startYear;
@@ -70,15 +75,27 @@ var Timeline = {
     },
 
     update : function() {
+        return;
+        var monthWidth = this.width / this.scale;
+
+
+        this.traverseMonths(function(i, month) {
+
+            this.months[i];
+
+            month.baseWidth = monthWidth;
+            month.x = "";
+
+        });
 
     },
 
     zoomIn : function() {
-        this.scale += this.zoomFactor;
+        this.zoom += this.zoomFactor;
     },
 
     zoomOut : function() {
-        this.scale -= this.zoomFactor;
+        this.zoom -= this.zoomFactor;
     },
 
     setCurrentMonth : function(month) {
@@ -152,20 +169,30 @@ var Timeline = {
 
     draw : function() {
 
-        var ctx = Timeline.ctx,
-            self = Timeline;
+        var ctx = this.ctx;
 
-        ctx.clearRect(0, 0, self.width, self.height);
+        ctx.clearRect(0, 0, this.width, this.height);
 
         ctx.save();
 
-        self.drawMonths();
+        ctx.scale(this.zoom, this.zoom);
 
-        self.drawMiddleLine();
+        this.drawMonths();
+
+        this.drawMiddleLine();
 
         ctx.restore();
+    },
 
-        requestAnimationFrame(Timeline.draw);
+
+    run : function() {
+
+        var self = this;
+        (function loop() {
+            self.draw();
+            requestAnimationFrame(loop);
+        })();
+
     },
 
     drawMiddleLine : function(ctx) {
@@ -177,7 +204,7 @@ var Timeline = {
 
         this.traverseMonths(function(i, month) {
 
-            month.draw(this.ctx, this);
+            month.draw(this.ctx);
 
         });
 
@@ -192,7 +219,7 @@ var Timeline = {
             month.offsetX += x;
 
             var monthX = month.x + month.offsetX;
-
+            // Set current month
             if (monthX > ((this.width / 4) * -1) && monthX < this.width / 4 && this.currentMonth !== month) {
                 this.setCurrentMonth(month);
             }
