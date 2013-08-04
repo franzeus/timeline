@@ -1,6 +1,5 @@
 var Timeline = {
 
-    scale : 2,
     timeline : null,
 
     currentMonth : null,
@@ -10,6 +9,9 @@ var Timeline = {
     mouseDownX : 0,
     scrollSpeed : 10,
     lockScrolling : false,
+
+    scale : 2,
+    zoomFactor : 0.5,
 
     init : function(options) {
 
@@ -67,10 +69,20 @@ var Timeline = {
         this.setCurrentMonth(this.months[Math.max(this.months.length - 1, 1)]);
     },
 
+    update : function() {
+
+    },
+
+    zoomIn : function() {
+        this.scale += this.zoomFactor;
+    },
+
+    zoomOut : function() {
+        this.scale -= this.zoomFactor;
+    },
+
     setCurrentMonth : function(month) {
-
         this.currentMonth = month;
-
     },
 
     bindEvents : function() {
@@ -149,35 +161,26 @@ var Timeline = {
 
         self.drawMonths();
 
-        ctx.fillStyle = '#FF0088';
-        ctx.fillRect(0, self.height / 2, self.width, 1);
+        self.drawMiddleLine();
 
         ctx.restore();
 
         requestAnimationFrame(Timeline.draw);
     },
 
+    drawMiddleLine : function(ctx) {
+        this.ctx.fillStyle = '#FF0088';
+        this.ctx.fillRect(0, this.height / 2, this.width, 1 * this.scale);
+    },
+
     drawMonths : function() {
 
         this.traverseMonths(function(i, month) {
 
-            month.draw(this.ctx, this.scale);
+            month.draw(this.ctx, this);
 
         });
 
-    },
-
-    drawYears : function() {
-
-        var options = {
-            width : this.width,
-            height : this.height,
-            scale : this.scale
-        }
-
-        this.traverseYears(function(key, year) {
-            year.draw(this.ctx, options);
-        });
     },
 
     update : function(x, direction) {
@@ -186,9 +189,11 @@ var Timeline = {
 
             var month = this.months[i];
 
-            month.x += x;
+            month.offsetX += x;
 
-            if (month.x > ((this.width / 4) * -1) && month.x < this.width / 4 && this.currentMonth !== month) {
+            var monthX = month.x + month.offsetX;
+
+            if (monthX > ((this.width / 4) * -1) && monthX < this.width / 4 && this.currentMonth !== month) {
                 this.setCurrentMonth(month);
             }
 
@@ -217,7 +222,7 @@ var Timeline = {
 
         var lastIndex = this.months.length - 1,
             monthIndex = this.currentMonth.monthIndex === 11 ? 0 : this.currentMonth.monthIndex + 1,
-            x = this.currentMonth.x + this.currentMonth.baseWidth,
+            x = this.currentMonth.x + this.currentMonth.offsetX + this.currentMonth.baseWidth,
             year = this.currentMonth.monthIndex === 11 ? this.currentMonth.year + 1 : this.currentMonth.year;
 
         return this.getMonthObject(lastIndex, monthIndex, x, year);
@@ -228,7 +233,7 @@ var Timeline = {
 
         var firstIndex = 0,
             monthIndex = this.currentMonth.monthIndex === 0 ? 0 : this.currentMonth.monthIndex - 1,
-            x = this.currentMonth.x - this.currentMonth.baseWidth,
+            x = this.currentMonth.x + this.currentMonth.offsetX - this.currentMonth.baseWidth,
             year = this.currentMonth.monthIndex === 0 ? this.currentMonth.year - 1 : this.currentMonth.year;
 
         return this.getMonthObject(firstIndex, monthIndex, x, year);

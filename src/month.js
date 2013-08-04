@@ -1,23 +1,28 @@
 var Month = function(options) {
 
-    var timeline = options.timeline;
+    this.timeline = options.timeline;
 
     this.index = options.index;
     this.monthIndex = options.monthIndex;
-    this.number = this.monthIndex + 1;
+
     this.year = options.year;
-    this.id = this.number + '_' + this.year;
+    this.number = this.monthIndex + 1;
     this.numberOfDays = this.getNumberOfDays(this.monthIndex, this.year);
+    this.id = this.number + '_' + this.year;
 
     this.events = [];
     this.days = [];
 
-    this.scale = timeline.scale;
+    this.scale = this.timeline.scale;
     this.baseWidth = options.baseWidth;
-    this.height = 20 * timeline.scale;
-    this.width = 2 * timeline.scale;
+
+    this.height = 20 * this.timeline.scale;
+    this.width = 2 * this.timeline.scale;
+
     this.x = options.x;
-    this.y = (timeline.height / 2) - (this.height / 2);
+    this.offsetX = 0;
+    this.y = (this.timeline.height / 2) - (this.height / 2);
+
     this.color = '#222';
 
     this.labelY = this.y - 5;
@@ -26,49 +31,50 @@ var Month = function(options) {
     this.generateDays();
 };
 
-Month.prototype.draw = function(ctx, scale) {
-    var pixelPerDay = Math.round(this.baseWidth / this.numberOfDays);
+Month.prototype.draw = function(ctx, timeline) {
 
-    this.drawDays(ctx, this, { y: 75 }, pixelPerDay, this.scale);
-    
+    //this.computeStyle();
+
+    var x = this.x + this.offsetX;
+
+    this.drawDays(ctx);
+
     ctx.fillStyle = this.color;
-    ctx.fillRect(this.x, this.y, this.width, this.height);
+    ctx.fillRect(x, this.y, this.width, this.height);
 
-    this.labelX = this.x;
+    this.labelX = x;
     var fontSize = this.fontSize;
 
     ctx.font = fontSize + "pt Arial";
     ctx.fillText(this.getName() + "." + this.year, this.labelX, this.labelY);
 
+};
 
-    return;
-    /*
-    var timeline = options.timeline;
-    var year = options.year;
-    */
+Month.prototype.update = function() {
 
-    var widthOfOneYear = year.width / 12;
-    var width = this.width * scale;
-    var height = this.height * scale;
-    
-    this.x = this.x + this.index * widthOfOneYear * scale;
-    this.y = year.y - (height / 2);   
+    var timeline = this.timeline;
 
-    ctx.fillStyle = this.color;
-    ctx.fillRect(this.x, this.y, width, height);
+    this.baseWidth = timeline.width / this.timeline.scale;
+    var index = this.index;
 
-    this.labelY = this.y - 5;
-    this.labelX = (this.x + widthOfOneYear);
-    var fontSize = this.fontSize + scale;
-    ctx.font = fontSize + "pt Arial";
-    ctx.fillText(this.getName(), this.labelX, this.labelY);
+    if (index === 0) {
+        index = -1;
+    }
+
+    this.x = this.baseWidth * index + this.offsetX;
+
+    this.y = timeline.height / 2 - (this.height / 2);
+    this.width = 2 * timeline.scale;
+    this.height = 20 * timeline.scale;
 
 };
 
-Month.prototype.drawDays = function(ctx, month, year, pixelPerDay, scale) {
+Month.prototype.drawDays = function(ctx) {
+
+    var pixelPerDay = Math.round(this.baseWidth / this.numberOfDays);
 
     this.traverseDays(function(day) {
-        day.draw(ctx, month, year, pixelPerDay, scale);
+        day.draw(ctx, this, { y: 75 }, pixelPerDay, this.timeline.scale);
     });
 };
 
@@ -116,9 +122,14 @@ Month.prototype.traverseDays = function(callback) {
 };
 
 Month.prototype.getComputedWidth = function() {
+
+    //return this.timeline.width / this.timeline.scale;
     return this.numberOfDays * this.pixelPerDay * this.scale;
 };
 
+Month.prototype.getComputedX = function() {
+    return this.getComputedWidth() * this.monthIndex;
+};
 
 Month.prototype.getNumberOfDays = function(month, year) {
 
